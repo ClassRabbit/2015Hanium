@@ -3,7 +3,23 @@
     pageEncoding="EUC-KR"%>
 <%@ page import="java.sql.*, java.util.*" %>
 <% request.setCharacterEncoding("UTF-8"); %>
-
+<%
+	Class.forName("org.gjt.mm.mysql.Driver");
+	Connection conn = null;
+	Statement stmt = null;
+	ResultSet rs = null;
+	//String id = (String)request.getAttribute("id");
+	String id = (String)session.getAttribute("id");
+	String state = "";
+	String light_IP = (String)session.getAttribute("light_IP");
+	int counter = 0;
+	try
+	{
+		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Shome",
+				"root","Shome");
+		stmt = conn.createStatement();
+		rs = stmt.executeQuery("SELECT * FROM light;");
+%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -13,7 +29,6 @@
 <script src="http://code.jquery.com/jquery.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <title>Shome 컨트롤러</title>
-
 <style type="text/css">
 	.wrap {
 		width: 100%;
@@ -21,42 +36,18 @@
 		position: relative;
 		<!-- background-color: blue; -->
 	}
-	.wrap_left{
-		width: 50%;
-	}
-	.wrap_right{
-		width: 50%;
-	}
 	.margin-center {
 		margin: 0 auto;
-		width: 53%;	
+		width: 50%;	
+	}
+	.margin-img {
+		margin: 0 auto;
+		width: 200px;
+		height: 230px;	
+		<!-- background-color: black; -->
 	}
 </style>
 </head>
-
-
-<%
-	Class.forName("org.gjt.mm.mysql.Driver");
-	Connection conn = null;
-	Statement stmt = null;
-	ResultSet rs = null;
-	//String id = (String)request.getAttribute("id");
-	String id = (String)session.getAttribute("id");
-	String light_state = "";
-	String fan_state = "";
-	String light_IP = (String)session.getAttribute("light_IP");
-	String fan_IP = (String)session.getAttribute("fan_IP");
-	int counter = 0;
-	try
-	{
-		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Shome",
-				"root","Shome");
-		stmt = conn.createStatement();
-		rs = stmt.executeQuery("SELECT * FROM light;");
-%>
-
-
-
 <body>
 	<nav class="navbar navbar-default"><!--메뉴관련 더 있음-->
   		<div class="navbar-header">
@@ -69,7 +60,7 @@
    		</div>
  		<div class="collapse navbar-collapse target"><!--숨겨지는부분-->
     		<ul class="nav navbar-nav">
-     			<li class="active"><a href="#">리모콘</a></li>
+     			<li class="active"><a href="#">전등</a></li>
      			<li><a href="Statistics.jsp">통계</a></li>
     		</ul>
     		<ul class="nav navbar-nav navbar-right">
@@ -78,51 +69,37 @@
     		</ul>
 		</div>
   	</nav>
-
-
-
+<div class="wrap">
+	<div class="margin-img">
 <%
 		rs.next();
-		light_state = rs.getString("state");
-		if(light_state.equals("Y"))
+		state = rs.getString("state");
+		if(state.equals("Y"))
 		{
-%>
+	%>
 			<iframe name="arduino" src="http://<%=light_IP %>/ON1" style="display: none;" width = "0" height= "0"></iframe>
-<% 
+			<img src="light_on.jpg" alt="light_on" width="200" height="200">
+	<% 
 		}
 		else
 		{
-%>
+	%>
 			<iframe name="arduino" src="http://<%=light_IP %>/OFF1" style="display: none;" width = "0" height= "0"></iframe>
-<%
-		}
-		rs = stmt.executeQuery("SELECT * FROM fan;");
-		rs.next();
-		fan_state = rs.getString("state");
-		if(fan_state.equals("Y"))
-		{
-%>
-			<iframe name="arduino" src="http://<%=fan_IP %>/ON2" style="display: none;" width = "0" height= "0"></iframe>
-<% 
-		}
-		else
-		{
-%>
-			<iframe name="arduino" src="http://<%=fan_IP %>/OFF2" style="display: none;" width = "0" height= "0"></iframe>
+			<img src="light_off.jpg" alt="light_off" width="200" height="200">
 <%
 		}
 	}
 	catch(SQLException e)
 	{
-%>
+	%>
 		SQLException!
-<%
+	<%
 	}
 	catch(Exception e)
 	{
-%>
+	%>
 		Exception!
-<%
+	<%
 	}
 	finally
 	{
@@ -157,49 +134,31 @@
 			}
 		}
 	}
-%>
-
-
-<div class="wrap">
+	%>
+	</div>
+</div>
+<div class="margin-center">
 	<form method=post action="LightChange.jsp">
-<%
-		if(light_state.equals("Y"))
+	<%
+		if(state.equals("Y"))
 		{
-%>
-			<input type="hidden" name="state" value="<%=light_state%>">
-			<center><input  TYPE="IMAGE" src="light_on.jpg" name="Submit" value="Submit"  align="absmiddle"></center>
-
-<%
+	%>
+			<input type="hidden" name="state" value="<%=state%>">
+			<input type="hidden" name="id" value="<%=id %>">
+			
+			<input class="btn btn-lg btn-info btn-block" type="submit" value="끄기">
+	<%
 		}
 		else
 		{
-%>
-			<input type="hidden" name="state" value="<%=light_state%>">		
-			<center><input  TYPE="IMAGE" src="light_off.jpg" name="Submit" value="Submit"  align="middle"></center>
-
-<%
+	%>
+			<input type="hidden" name="state" value="<%=state%>">
+			<input type="hidden" name="id" value="<%=id %>">
+			
+			<input class="btn btn-lg btn-info btn-block" type="submit" value="켜기">
+	<%
 		}
-%>
-	</form>
-		<form method=post action="FanChange.jsp">
-<%
-		if(fan_state.equals("Y"))
-		{
-%>
-			<input type="hidden" name="state" value="<%=fan_state%>">		
-			<center><input  TYPE="IMAGE" src="fan_on.jpg" name="Submit" value="Submit"  align="middle"></center>
-
-<%
-		}
-		else
-		{
-%>
-			<input type="hidden" name="state" value="<%=fan_state%>">			
-			<center><input  TYPE="IMAGE" src="fan_off.jpg" name="Submit" value="Submit"  align="middle"></center>
-
-<%
-		}
-%>
+	%>
 	</form>
 </div>
 </body>

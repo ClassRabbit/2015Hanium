@@ -1,182 +1,289 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
 <%@ page import="java.sql.*, java.util.*, java.text.*, java.util.Date" %>
 <% request.setCharacterEncoding("UTF-8"); %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-<title>Shome Ïª®Ìä∏Î°§Îü¨</title>
-</head>
-<% request.setCharacterEncoding("UTF-8"); %>
 <%
-	SimpleDateFormat simpleDate = new SimpleDateFormat("yyyy-MM-dd");
-	String find_begin = "";
-	String find_end = "";
-	Date find_begin_D = null;
-	Date find_end_D = null;
-	Calendar find_begin_C = null;
-	Calendar find_end_C = null;
-	
-	if(session.getAttribute("find_begin") != null && session.getAttribute("find_end") != null) 
+	String year = "";
+	String month = "";
+	String day = "";
+	if(session.getAttribute("year") != null) 
 	{
-		find_begin = (String)session.getAttribute("find_begin");
-		find_end = (String)session.getAttribute("find_end");
-		
-		find_begin_D = simpleDate.parse(find_begin);
-		find_end_D = simpleDate.parse(find_end);
-		
-		find_begin_C = Calendar.getInstance();
-		find_end_C = Calendar.getInstance();
-		
-		find_begin_C.setTime(find_begin_D);
-		find_end_C.setTime(find_end_D);
-	}
-	else
-	{
-		Date today = new Date();
-		
-		
-		find_begin = simpleDate.format(today);
-		find_end = simpleDate.format(today);
-		
-		find_begin_D = simpleDate.parse(find_begin);
-		find_end_D = simpleDate.parse(find_end);
-		
-		find_begin_C = Calendar.getInstance();
-		find_end_C = Calendar.getInstance();
-		
-		find_begin_C.setTime(find_begin_D);
-		find_end_C.setTime(find_end_D);
+		year = (String)session.getAttribute("year");
+		month = (String)session.getAttribute("month");
+		day = (String)session.getAttribute("day");
 	}
 	Class.forName("org.gjt.mm.mysql.Driver");
 	Connection conn = null;
 	Statement stmt = null;
 	ResultSet rs = null;
-
+	//String id = (String)request.getAttribute("id");
 	String id = (String)session.getAttribute("id");
 	String state = "";
 	String time = "";
-
+	String time_now = "";
+	Date  begin_date = null;
+	Date  end_date = null;
+	long r_hour = 0;
+	long r_min = 0;
+	long r_sec = 0;
+	long r_msec = 0;
+	long resultTime = 0;
 	int counter = 0;
-	if(id == null)
+	try
 	{
-		response.sendRedirect("LoginCheck.jsp");
-	}
+		GregorianCalendar calendar = new GregorianCalendar();
+		if(year.equals("%") ||  year.equals(""))
+		{
+			time_now += "%" + "-";
+		}
+		else
+		{
+			time_now += year + "-";
+		}
+		if(month.equals("%") ||  month.equals(""))
+		{
+			time_now += "%" + "-";
+		}
+		else
+		{
+			if(Integer.parseInt(month) <10)
+			{
+				time_now += "0" + month + "-";
+			}
+			else
+			{
+				time_now += month + "-";
+			}
+		}
+		if(day.equals("%") ||  day.equals(""))
+		{
+			time_now += "%";
+		}
+		else
+		{
+			if(Integer.parseInt(day) <10)
+			{
+				time_now += "0" + day;
+			}
+			else
+			{
+				time_now += day;
+			}
+		}
+		conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Shome",
+				"root","Shome");
+		stmt = conn.createStatement();
+		rs = stmt.executeQuery("SELECT * FROM light_log WHERE time like '" + time_now + "%';");
 %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script src="http://code.jquery.com/jquery.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<title>Shome ƒ¡∆Æ∑—∑Ø</title>
+<style type="text/css">
+
+	.container {
+		width:30%;
+	}
+	.wrap {
+		width: 100%;
+		height: 120%;
+		position: relative;
+		<!-- background-color: blue; -->
+	}
+	.margin-center {
+		margin: 0 auto;
+		width: 70%;	
+	}
+	.margin-text {
+		margin: 8%;
+		right: 
+	}
+</style>
+</head>
 <body>
-	<nav class="navbar navbar-default"><!--Î©îÎâ¥Í¥ÄÎ†® Îçî ÏûàÏùå-->
-		<div class="container">
-	  		<div class="navbar-header">
-	    		<button class="navbar-toggle" data-toggle="collapse" data-target=".target"><!--Î™®Î∞îÏùºÏùºÍ≤ΩÏö∞-->
-	    			<span class="icon-bar"></span>
-	    			<span class="icon-bar"></span>
-	    			<span class="icon-bar"></span>
-	    		</button>
-	    		<a class="navbar-brand" href="Introduce_in.jsp">Shome</a>
-	   		</div>
-	 		<div class="collapse navbar-collapse target"><!--Ïà®Í≤®ÏßÄÎäîÎ∂ÄÎ∂Ñ-->
-	    		<ul class="nav navbar-nav">
-	     			<li><a href="Control.jsp">Î¶¨Î™®ÏΩò</a></li>
-	     			<li class="active"><a href="Statistics.jsp">Í∏∞Î°ù</a></li>
-	    		</ul>
-	    		<ul class="nav navbar-nav navbar-right">
-	     			<li><a href="ProfileFix.jsp"><%=id %></a></li>
-	            	<li><a href="Logout.jsp">Î°úÍ∑∏ÏïÑÏõÉ</a></li>
-	    		</ul>
-			</div>
+	<nav class="navbar navbar-default"><!--∏ﬁ¥∫∞¸∑√ ¥ı ¿÷¿Ω-->
+  		<div class="navbar-header">
+    		<button class="navbar-toggle" data-toggle="collapse" data-target=".target"><!--∏πŸ¿œ¿œ∞ÊøÏ-->
+    			<span class="icon-bar"></span>
+    			<span class="icon-bar"></span>
+    			<span class="icon-bar"></span>
+    		</button>
+    		<a class="navbar-brand" href="#">Shome</a>
+   		</div>
+ 		<div class="collapse navbar-collapse target"><!--º˚∞‹¡ˆ¥¬∫Œ∫–-->
+    		<ul class="nav navbar-nav">
+     			<li><a href="Control.jsp">∏Æ∏ƒ‹</a></li>
+     			<li class="active"><a href="#">≈Î∞Ë</a></li>
+    		</ul>
+    		<ul class="nav navbar-nav navbar-right">
+     			<li><a href="ProfileFix.jsp"><%=id %></a></li>
+            	<li><a href="Logout.jsp">∑Œ±◊æ∆øÙ</a></li>
+    		</ul>
 		</div>
   	</nav>
 
 
-<div class="container">
-	<center><h1>Ï†ÑÍµ¨</h1></center>
-		</br>
-<%
-	if(request.getAttribute("error") != null)
-	{
-%>
-		<div class="alert alert-danger">
-			<strong>ÎÇ†Ïßú Î≤îÏúÑÍ∞Ä ÏûòÎ™ªÎêòÏóàÏäµÎãàÎã§.</strong> 
-		</div>
-<%	
-	}
-%>
+<div class="margin-center">
 	<form method=post action="StatisticsCheck.jsp">
-		<input type="hidden" name="from" value="light">	
-	 	<div class="row">
-			<div class="col-sm-1"></div>
-			<center><input type="date" class="col-sm-3" name="find_begin" value="<%=find_begin%>"></center>
-			<center><span class="col-sm-1"><b>~</b></span></center>
-			<center><input type="date" class="col-sm-3" name="find_end" value="<%=find_end%>"></center>
-			<div class="col-sm-1"></div>
-			<center><input class="btn btn-primary col-sm-2" type="submit" value="Í≤ÄÏÉâ"></center>
-		</div>
+	 	<ul class="nav nav-pills">
+			<li class="container">
+				<select class="form-control" name="year">
+<% 
+						for(int i = 2015; i<=2030; i++)
+						{
+							if(year.equals(""+i))
+							{
+%>
+								<option selected value="<%=i%>"><%=i %></option>
+<%
+							}
+							else
+							{
+%>
+								<option value="<%=i%>"><%=i %></option>
+<%
+							}
+						}
+%>
+				</select>
+			</li>
+			<li class="container">
+				<select class="form-control" name="month">
+					<option value="%">¿¸√º</option>
+<% 
+					for(int i = 1; i<=12; i++)
+					{
+						if(month.equals(""+i))
+						{
+%>
+							<option selected value="<%=i%>"><%=i %></option>
+<%
+						}
+						else
+						{
+%>
+							<option value="<%=i%>"><%=i %></option>
+<%
+						}
+					}
+%>
+				</select>
+			</li>
+			<li class="container">
+				<select class="form-control" name="day">
+					<option value="%">¿¸√º</option>
+<% 
+					for(int i = 1; i<=31; i++)
+					{
+						if(day.equals(""+i))
+						{
+%>
+							<option selected value="<%=i %>"><%=i %></option>
+<%
+						}
+						else
+						{
+%>
+							<option value="<%=i %>"><%=i %></option>
+<%
+						}
+					}
+%>
+				</select>
+			</li>
+			<li>
+				<input class="btn btn-info" type="submit" value="∞Àªˆ">
+			</li>
+		</ul>	
 	</form>
-	</br>
-	<div style="height:700px; overflow: auto;">
+	
+	
 		<table class="table table-striped table-hover ">
 			<thead>
 				<tr>
 					<th>#</th>
-                   	<th>ÏÉÅÌÉú</th>
-                   	<th>ÏãúÍ∞Ñ</th>
+                   	<th>ªÛ≈¬</th>
+                   	<th>Ω√∞£</th>
                	</tr>
            	</thead>
             <tbody>
 <%
-			try
-			{
-				conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Shome","root","Shome");
-				stmt = conn.createStatement();
-				System.out.println(""+find_end_C.compareTo(find_begin_C));
-				while(find_end_C.compareTo(find_begin_C) >= 0 )
+				while(rs.next() && counter<5)
 				{
-					simpleDate = new SimpleDateFormat("yyyy-MM-dd");
-					//String strtt = "SELECT * FROM fan_log WHERE time like '" + simpleDate.format(find_end_C.getTime()) + "%' ORDER BY time DESC;";
-					//System.out.println(strtt);
-					rs = stmt.executeQuery("SELECT * FROM light_log WHERE time like '" + simpleDate.format(find_end_C.getTime()) + "%' ORDER BY time DESC;");
-					
-					while(rs.next())
+					state = rs.getString("state");
+					time = rs.getString("time");
+					counter++;
+%>
+                
+         	<tr>
+                    <td><%=counter %></td>
+                    <td><%=state %></td>
+                    <td><%=time %></td>
+<%
+					SimpleDateFormat simpeDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
+					if(state.equals("Y"))
 					{
-						state = rs.getString("state");
-						time = rs.getString("time");
-						counter++;
-%>
-	                
-	         		<tr>
-	                    <td><%=counter %></td>
-<%
-						if(state.equals("Y"))
-						{
-%>
-							<td>ON</td>
-<%
-						}
-						else if(state.equals("N"))
-						{
-%>
-							<td>OFF</td>
-<%
-						}
-%>
-	                    <td><%=time %></td>
-<%
+						try {
+					        begin_date = simpeDate.parse(time);
+					    } catch (ParseException e) {
+					        e.printStackTrace();
+					    }
 					}
-					find_end_C.add(Calendar.DATE, -1);
+					else
+					{
+						try 
+						{
+					        end_date = simpeDate.parse(time);
+					    } 
+						catch (ParseException e) 
+						{
+					        e.printStackTrace();
+						}
+						if(begin_date != null)
+						{
+							resultTime += end_date.getTime() - begin_date.getTime();
+						}
+					}    
 				}
-
 %>
-				</tr>
 			</tbody>
 		</table>
-	</div>	
-	</br>
-
+			
+			
+<%
+				r_hour = resultTime/(60*60*100);
+				resultTime = resultTime%(60*60*100);
+				r_min = resultTime/(60*100);
+				resultTime = resultTime%(60*100);
+				r_sec = resultTime/100;
+				r_msec = resultTime%100;
+				String resultStr = "√— ªÁøÎΩ√∞£¿∫ ";
+				if(r_hour > 0)
+				{
+					resultStr += r_hour + "Ω√∞£ ";
+				}
+				if(r_min > 0)
+				{
+					resultStr += r_min + "∫– ";
+				}
+				if(r_sec > 0)
+				{
+					resultStr += r_sec + "√  ";
+				}
+				if(r_msec > 0)
+				{
+					resultStr += r_msec + " ";
+				}
+				resultStr += "ms ¿‘¥œ¥Ÿ.";
+				
+%>
+			<center><h3 class="margin-text"><%=resultStr %></h3></center>
+			<div class="progress-bar progress-bar-danger" style="width: 80%"></div>
 <%
 	}
 	catch(SQLException e)

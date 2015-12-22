@@ -1,12 +1,12 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+    pageEncoding="EUC-KR"%>
 <%@ page import="java.sql.*, java.util.*" %>
 <% request.setCharacterEncoding("UTF-8"); %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Shome 而⑦듃濡ㅻ윭</title>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Shome 컨트롤러</title>
 </head>
 <body>
 <%
@@ -32,7 +32,7 @@
 			<!--<iframe name="arduino" src="http://??????/ON1" style="display: none;" width = "0" height= "0"></iframe>-->
 <%
 			stmt.executeUpdate("update fan set state='N' where state = 'Y';");
-			stmt.executeUpdate("insert into fan_log (state, time) values('N','"+time +"')");
+			stmt.executeUpdate("insert into light_log (state, time) values('N','"+time +"')");
 		}
 		else
 		{
